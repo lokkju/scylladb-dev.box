@@ -2,8 +2,6 @@ install pre-requisites:
   pkg.installed:
     - names:
       - epel-release
-      - dnsmasq
-
 scylla.repo:
   pkgrepo.managed:
     - humanname: Scylla for Centos $releasever - $basearch
@@ -25,18 +23,20 @@ scylla-3rdparty.repo:
     - enabled: 1
     - gpgcheck: 0
 
-#remove conflicting boost packages:
-#  pkg.removed:
-#    - names:
-#      - boost-thread
-#      - boost-system
-
 install scylladb:
   pkg.installed:
     - names:
       - scylla-server
       - scylla-jmx
       - scylla-tools
+
+/var/lib/scylla/conf/scylla.yaml:
+  file.managed:
+    - source: salt://conf/scylla.yaml
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
 
 scylla-server:
   service.running:
