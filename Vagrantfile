@@ -2,12 +2,15 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "centos/7"
+  config.vm.box = "boxcutter/centos71"
+  config.vm.hostname = "scylladb-dev"
+  config.vm.network :forwarded_port, guest: 10000, host: 10000
+  config.vm.network :forwarded_port, guest: 9042, host: 9042
 
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
+  config.vm.provider "virtualbox" do |vb|
+    # Customize the amount of memory on the VM:
+    vb.memory = "2048"
+  end
 
   if Vagrant.has_plugin?("vagrant-cachier")
     # Configure cached packages to be shared between instances of the same base box.
@@ -15,13 +18,11 @@ Vagrant.configure(2) do |config|
     config.cache.scope = :box
   end
 
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
-
   config.vm.synced_folder "salt/roots/", "/srv/salt/"
 
   config.vm.provision :salt do |salt|
+    salt.bootstrap_options = '-F -c /tmp/' #https://github.com/mitchellh/vagrant/issues/5973
+    salt.verbose = true
     salt.minion_config = "salt/minion.yml"
     salt.run_highstate = true
     salt.colorize = true
